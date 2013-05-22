@@ -2,7 +2,7 @@ class Round
   include DataMapper::Resource
 
   # meta
-  property :id, Seral
+  property :id, Serial
   property :started_at, DateTime, :default => Time.now
 
   # general

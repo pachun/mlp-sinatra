@@ -1,3 +1,4 @@
+# {team/game} join table
 class TeamGame
   include DataMapper::Resource
 
