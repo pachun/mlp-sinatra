@@ -8,7 +8,7 @@ class League
   # general
   property :name, String
   property :commissioner_id, Integer
-  property :current_season_id, Integer
+  property :current_season_id, Integer, :default => 0
 
   # league rules
   property :players_per_team, Integer, :default => 2
