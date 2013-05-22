@@ -1,0 +1,11 @@
+class TeamGame
+  include DataMapper::Resource
+
+  # meta
+  property :id, Serial
+  property :home_team, Boolean
+
+  # relations
+  belongs_to :team
+  belongs_to :game
+end
