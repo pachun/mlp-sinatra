@@ -18,8 +18,8 @@ class Team
   belongs_to :season
 
   has n, :team_games
-  has n, :team_players
+  has n, :games, :through => :team_games
 
-  has n, :games, :through, :team_games
-  has n, :players, :through, :team_players
+  has n, :team_players
+  has n, :players, :through => :team_players
 end

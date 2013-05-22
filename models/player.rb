@@ -15,6 +15,10 @@ class Player
 
   # relations
   has n, :shots
+
+  has n, :team_players
+  has n, :teams, :through => :team_players
+
   has n, :league_players
   has n, :leagues, :through => :league_players
 end

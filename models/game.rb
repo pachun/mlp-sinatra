@@ -19,5 +19,5 @@ class Game
   has n, :rounds
 
   has n, :team_games
-  has n, :games, :through, :team_games
+  has n, :games, :through => :team_games
 end

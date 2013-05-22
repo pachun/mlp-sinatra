@@ -18,6 +18,7 @@ class League
 
   # relations
   has n, :seasons
+
   has n, :league_players
-  has n, :players, :through, :league_players
+  has n, :players, :through => :league_players
 end
