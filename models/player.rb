@@ -6,8 +6,8 @@ class Player
   property :registered_at, DateTime, :default => Time.now
 
   # general
-  property :full_name, String, :required => true
-  property :email, String, :unique => true, :required => true
+  property :full_name, String, :length => 5..50, :required => true
+  property :email, String, :unique => true, :length => 6..75, :required => true
 
   # authentication
   property :api_key, String
@@ -25,7 +25,7 @@ class Player
   # register
   def self.signup(full_name, email, password)
     hashed_password = BCrypt::Password.create(password, :cost => 10)
-    api_key = (0...32).map { (65 + rand(26)).chr }.joinend
+    api_key = (0...32).map { (65 + rand(26)).chr }.join
     new_player = Player.create(
       :full_name => full_name,
       :email => email,
