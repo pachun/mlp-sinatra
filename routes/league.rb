@@ -1,9 +1,11 @@
 class MLPSinatra < Sinatra::Application
 
   # create a league
-  post 'league/:api_key' do
-    if League.new_with(:league => params[:league], :commissioner_key => params[:api_key])
+  post '/league/:api_key' do
+    new_league = League.new_with(params[:league], params[:api_key])
+    if new_league
       status 200
+      {:id => new_league.id}.to_json
     else
       status 400
     end
@@ -53,9 +55,20 @@ class MLPSinatra < Sinatra::Application
   post '/league/:league_id/invite/:player_id/:api_key' do
     invited = League.invite(:league_id => params[:league_id],
                             :player_id => params[:player_id],
-                            :commissioner_key => params[:api_key])
+                            :requester_api_key => params[:api_key])
     if invited
       status 200
+    else
+      status 400
+    end
+  end
+
+  # get a list of all players in & out of the league
+  post '/league/:league_id/invitable_players/:api_key' do
+    invitable_players = League.invitable_players(params[:league_id].to_i, params[:api_key])
+    if invitable_players
+      status 200
+      invitable_players.to_json
     else
       status 400
     end

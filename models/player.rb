@@ -10,8 +10,8 @@ class Player
   property :email, String, :unique => true, :length => 6..75, :required => true
 
   # authentication
-  property :api_key, String
-  property :hashed_password, BCryptHash
+  property :api_key, String, :length => 32, :required => true
+  property :hashed_password, BCryptHash, :required => true
 
   # relations
   has n, :shots
@@ -40,7 +40,7 @@ class Player
     players = Player.all(:order => [:full_name.asc])
     response = []
     players.each do |p|
-      response << {:full_name => p.full_name, :email => p.email, :registered_at => p.registered_at}
+      response << {:id => p.id, :full_name => p.full_name, :email => p.email, :registered_at => p.registered_at}
     end
     response.to_json
   end
