@@ -6,7 +6,7 @@ class Player
   property :registered_at, DateTime, :default => Time.now
 
   # general
-  property :full_name, String, :length => 5..50, :required => true
+  property :name, String, :length => 5..50, :required => true
   property :email, String, :unique => true, :length => 6..75, :required => true
 
   # authentication
@@ -23,11 +23,11 @@ class Player
   has n, :leagues, :through => :league_players
 
   # register
-  def self.signup(full_name, email, password)
+  def self.signup(name, email, password)
     hashed_password = BCrypt::Password.create(password, :cost => 10)
     api_key = (0...32).map { (65 + rand(26)).chr }.join
     new_player = Player.create(
-      :full_name => full_name,
+      :name => name,
       :email => email,
       :hashed_password => hashed_password,
       :api_key => api_key
@@ -37,11 +37,35 @@ class Player
 
   # get a list of all the players (strip api_key & password)
   def self.all_sanitized
-    players = Player.all(:order => [:full_name.asc])
-    response = []
-    players.each do |p|
-      response << {:id => p.id, :full_name => p.full_name, :email => p.email, :registered_at => p.registered_at}
+    players = Player.all(:order => [:name.asc])
+    players.map! { |player| Player.sanitize(player) }
+    players
+  end
+
+  def self.sanitize(player)
+    {:id => player.id, :name => player.name, :email => player.email, :registered_at => player.registered_at}
+  end
+
+  # get a list of the player's leagues
+  def self.leagues(info)
+    player = Player.first(:id => info[:player_id].to_i)
+    return false if player.api_key != info[:requester_api_key]
+
+    league_ids = []
+    player.league_players.each do |invite|
+      league_ids << invite.league_id if invite.accepted_invite
     end
-    response.to_json
+    league_ids.map { |id| League.with_commissioner( League.first(:id => id) ) }
+  end
+
+  # get a list of the player's league invites
+  def self.league_invites(info)
+    player = Player.first(:id => info[:player_id].to_i)
+    return false if player.api_key != info[:requester_api_key]
+    league_ids = []
+    player.league_players.each do |invite|
+      league_ids << invite.league_id if !invite.accepted_invite
+    end
+    league_ids.map { |id| League.with_commissioner( League.first(:id => id) ) }
   end
 end

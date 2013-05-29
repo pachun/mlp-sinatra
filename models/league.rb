@@ -45,37 +45,6 @@ class League
     new_league
   end
 
-  # add a referee
-  def self.add_referee(info)
-    league = League.first(:id => info[:league_id])
-    new_ref = Player.first(:id => info[:player_id])
-    commissioner = Player.first(:api_key => info[:commissioner_key])
-    return 'missing info' if league.nil? || new_ref.nil? || commissioner.nil?
-    return 'no permission' if league.commissioner_id != commissioner.id
-
-    league_player = LeaguePlayer.first(:league_id => league.id, :player_id => new_ref.id, :accepted_invite => true)
-    return 'player not in league' if league_player.nil?
-
-    if league_player.update(:is_referee => true)
-      'updated'
-    else
-      'failed'
-    end
-  end
-
-  # update the league
-  def self.update_with(info)
-    league = League.first(:id => info[:league_id])
-    commissioner = Player.first(:api_key => info[:commissioner_key])
-    league_info = info[:league_changes]
-
-    return false if league.commissioner_id != commissioner.id
-
-    # only allow updating these attributes of the league
-    league_info.select! { |a| a == :name || a == :commissioner_id || a == :current_season }
-    return league.update(league_info)
-  end
-
   # invite a player
   def self.invite(info)
     league = League.first(:id => info[:league_id].to_i)
@@ -95,11 +64,11 @@ class League
 
     return false if commissioner.api_key != requester_api_key
 
-    all_players = Player.all(:order => [:full_name.asc])
+    all_players = Player.all(:order => [:name.asc])
 
     invitable_players = []
     all_players.each do |player|
-      player_info = {:id => player.id, :name => player.full_name}
+      player_info = {:id => player.id, :name => player.name}
 
       invite = LeaguePlayer.first(:league_id => league.id, :player_id => player.id)
       if invite
@@ -113,5 +82,20 @@ class League
     end
 
     invitable_players
+  end
+
+  # lump league & commissioner data into one hash
+  def self.with_commissioner(l)
+    league = {:id => l.id,
+              :created_at => l.created_at,
+              :name => l.name,
+              :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
+              :current_season_id => l.current_season_id,
+              :players_per_team => l.players_per_team,
+              :plays_balls_back => l.plays_balls_back,
+              :extra_point_cups => l.extra_point_cups,
+              :rerack_cups => l.rerack_cups
+    }
+    league
   end
 end

@@ -12,7 +12,7 @@ class MLPSinatra < Sinatra::Application
 
       if real_player && real_player.hashed_password == player[:password]
         status 200
-        {:id => real_player.id, :name => real_player.full_name, :api_key => real_player.api_key}.to_json
+        {:id => real_player.id, :name => real_player.name, :api_key => real_player.api_key}.to_json
       else
         status 400
       end
