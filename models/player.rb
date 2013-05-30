@@ -68,4 +68,28 @@ class Player
     end
     league_ids.map { |id| League.with_commissioner( League.first(:id => id) ) }
   end
+
+  # accept a league invite
+  def self.accept_league_invite(info)
+    player_id = info[:player_id].to_i
+    league_id = info[:league_id].to_i
+    player = Player.first(:id => player_id)
+    return false if player.api_key != info[:requester_api_key]
+    league_player = LeaguePlayer.first(:league_id => league_id, :player_id => player_id)
+    return false if !league_player
+
+    league_player.update(:accepted_invite => true, :accepted_at => Time.now)
+  end
+
+  # accept a league invite
+  def self.decline_league_invite(info)
+    player_id = info[:player_id].to_i
+    league_id = info[:league_id].to_i
+    player = Player.first(:id => player_id)
+    return false if player.api_key != info[:requester_api_key]
+    league_player = LeaguePlayer.first(:league_id => league_id, :player_id => player_id)
+    return false if !league_player
+
+    league_player.destroy
+  end
 end

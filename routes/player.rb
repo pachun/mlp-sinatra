@@ -37,4 +37,22 @@ class MLPSinatra < Sinatra::Application
       status 400
     end
   end
+
+  # accept a league invite
+  put '/player/:player_id/accept_league/:league_id/:requester_api_key' do
+    if Player.accept_league_invite(params)
+      status 200
+    else
+      status 400
+    end
+  end
+
+  # decline a league invite
+  delete '/player/:player_id/decline_league/:league_id/:requester_api_key' do
+    if Player.accept_league_invite(params)
+      status 200
+    else
+      status 400
+    end
+  end
 end
