@@ -22,6 +22,11 @@ class League
   has n, :league_players
   has n, :players, :through => :league_players
 
+  # return the commissioner
+  def commissioner
+    Player.first(:id => commissioner_id)
+  end
+
   # create a new league with the given attributes and commissioner's api_key
   def self.new_with(league, api_key)
     league[:commissioner_id] = league[:commissioner_id].to_i
@@ -97,5 +102,50 @@ class League
               :rerack_cups => l.rerack_cups
     }
     league
+  end
+
+  def self.with_commissioner_and_season(l)
+    league = {:id => l.id,
+              :created_at => l.created_at,
+              :name => l.name,
+              :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
+              :current_season => Season.first(:id => l.current_season_id),
+              :players_per_team => l.players_per_team,
+              :plays_balls_back => l.plays_balls_back,
+              :extra_point_cups => l.extra_point_cups,
+              :rerack_cups => l.rerack_cups
+    }
+    league
+  end
+
+  # update league
+  def self.update(info)
+    league_info = info[:league]
+    requester = Player.first(:api_key => info[:requester_api_key])
+    league = League.first(:id => info[:league_id].to_i)
+    return false if league.nil?
+    return false if requester.id != league.commissioner_id
+
+    updated = true
+    if league_info.has_key?('current_season_id')
+      updated = updated & league.update(:current_season_id => league_info[:current_season_id].to_i)
+    end
+    updated
+  end
+
+  # get all the players in the league
+  def self.players(info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    league = League.first(:id => info[:league_id].to_i)
+    return false if requester.nil? || league.nil?
+
+    enrolled_players = league.players.select do |p|
+      LeaguePlayer.first(:player_id => p.id, :league_id => league.id).accepted_invite
+    end
+
+    enrolled_player_ids = enrolled_players.map { |p| p.id }
+    return false if !enrolled_player_ids.include?(requester.id)
+
+    enrolled_players.map { |p| Player.sanitize(p) }
   end
 end

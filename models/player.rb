@@ -55,7 +55,7 @@ class Player
     player.league_players.each do |invite|
       league_ids << invite.league_id if invite.accepted_invite
     end
-    league_ids.map { |id| League.with_commissioner( League.first(:id => id) ) }
+    league_ids.map { |id| League.with_commissioner_and_season( League.first(:id => id) ) }
   end
 
   # get a list of the player's league invites

@@ -7,6 +7,8 @@ class TeamGame
   property :home_team, Boolean
 
   # relations
+  belongs_to :season
+
   belongs_to :team
   belongs_to :game
 end

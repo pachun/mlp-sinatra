@@ -10,6 +10,8 @@ class TeamPlayer
   property :accepted_at, DateTime
 
   # relations
+  belongs_to :season
+
   belongs_to :team
   belongs_to :player
 end
