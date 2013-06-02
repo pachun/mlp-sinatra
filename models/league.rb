@@ -105,17 +105,17 @@ class League
   end
 
   def self.with_commissioner_and_season(l)
-    league = {:id => l.id,
-              :created_at => l.created_at,
-              :name => l.name,
-              :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
-              :current_season => Season.first(:id => l.current_season_id),
-              :players_per_team => l.players_per_team,
-              :plays_balls_back => l.plays_balls_back,
-              :extra_point_cups => l.extra_point_cups,
-              :rerack_cups => l.rerack_cups
+    {
+      :id => l.id,
+      :created_at => l.created_at,
+      :name => l.name,
+      :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
+      :current_season => Season.first(:id => l.current_season_id),
+      :players_per_team => l.players_per_team,
+      :plays_balls_back => l.plays_balls_back,
+      :extra_point_cups => l.extra_point_cups,
+      :rerack_cups => l.rerack_cups
     }
-    league
   end
 
   # update league

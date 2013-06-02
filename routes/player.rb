@@ -17,7 +17,7 @@ class MLPSinatra < Sinatra::Application
   end
 
   # get a player's leagues
-  post '/player/:player_id/leagues/:requester_api_key' do
+  get '/player/:player_id/leagues/:requester_api_key' do
     leagues = Player.leagues(params)
     if leagues
       status 200
@@ -28,7 +28,7 @@ class MLPSinatra < Sinatra::Application
   end
 
   # get a player's league invites
-  post '/player/:player_id/league_invites/:requester_api_key' do
+  get '/player/:player_id/league_invites/:requester_api_key' do
     league_invites = Player.league_invites(params)
     if league_invites
       status 200
@@ -40,7 +40,7 @@ class MLPSinatra < Sinatra::Application
 
   # accept a league invite
   put '/player/:player_id/accept_league/:league_id/:requester_api_key' do
-    if Player.accept_league_invite(params)
+    if Player.league_invite(:accept, params)
       status 200
     else
       status 400
@@ -49,7 +49,7 @@ class MLPSinatra < Sinatra::Application
 
   # decline a league invite
   delete '/player/:player_id/decline_league/:league_id/:requester_api_key' do
-    if Player.accept_league_invite(params)
+    if Player.league_invite(:decline, params)
       status 200
     else
       status 400

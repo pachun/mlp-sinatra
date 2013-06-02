@@ -11,11 +11,6 @@ class Season
 
   # relations
   belongs_to :league
-
-  has n, :team_players
-  has n, :team_games
-
-
   has n, :teams
   has n, :games
 
@@ -32,5 +27,29 @@ class Season
     season.save
 
     {:id => season.id, :created_at => season.created_at, :teams_locked => season.teams_locked}
+  end
+
+  # get all the teams
+  def self.teams(info)
+    player = Player.first(:api_key => info[:requester_api_key])
+    season = Season.first(:id => info[:season_id].to_i)
+    return false if player.nil? || season.nil?
+    return false if player.id != season.league.commissioner.id
+
+    season.teams_with_players
+  end
+
+  # bundle season teams with their players
+  def teams_with_players
+    teams.map do |team|
+      {
+        :id => team.id,
+        :name => team.name,
+        :num_players => league.players_per_team,
+        :finalized => team.finalized,
+        :finalized_at => team.finalized_at,
+        :proposed_at => team.proposed_at,
+      }
+    end
   end
 end
