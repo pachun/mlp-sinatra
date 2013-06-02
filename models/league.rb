@@ -9,8 +9,9 @@ class League
   property :name, String, :length => 2..20
   property :commissioner_id, Integer
   property :current_season_id, Integer, :default => 0
+  def commissioner; Player.first(:id => commissioner_id); end
 
-  # league rules
+  # rules
   property :players_per_team, Integer, :default => 2
   property :plays_balls_back, Boolean, :default => false
   property :extra_point_cups, String, :default => ''
@@ -22,35 +23,25 @@ class League
   has n, :league_players
   has n, :players, :through => :league_players
 
-  # return the commissioner
-  def commissioner
-    Player.first(:id => commissioner_id)
-  end
-
-  # create a new league with the given attributes and commissioner's api_key
-  def self.new_with(league, api_key)
+  def self.new_with(info)
+    league = info[:league]
     league[:commissioner_id] = league[:commissioner_id].to_i
     league[:players_per_team] = league[:players_per_team].to_i
-
-    player = Player.first(:id => league[:commissioner_id])
-    return false if player.nil?
-    return false if player.api_key != api_key
+    commissioner = Player.first(:id => league[:commissioner_id])
+    return false if commissioner.nil? || commissioner.api_key != info[:requester_api_key]
 
     new_league = League.create(league)
     new_league.save
-
     LeaguePlayer.create({
       :league_id => new_league.id,
-      :player_id => player.id,
+      :player_id => commissioner.id,
       :is_referee => true,
       :accepted_invite => true,
       :accepted_at => Time.now
     }).save
-
     new_league
   end
 
-  # invite a player
   def self.invite(info)
     league = League.first(:id => info[:league_id].to_i)
     invitee = Player.first(:id => info[:player_id].to_i)
@@ -62,19 +53,12 @@ class League
     invite.save
   end
 
-  # get a list of players in & out of the league
-  def self.invitable_players(league_id, requester_api_key)
-    league = League.first(:id => league_id)
-    commissioner = Player.first(:id => league.commissioner_id)
+  def self.invitable_players(info)
+    league = League.first(:id => info[:league_id].to_i)
+    return false if league.commissioner.api_key != info[:requester_api_key]
 
-    return false if commissioner.api_key != requester_api_key
-
-    all_players = Player.all(:order => [:name.asc])
-
-    invitable_players = []
-    all_players.each do |player|
+    Player.all(:order => [:name.asc]).map do |player|
       player_info = {:id => player.id, :name => player.name}
-
       invite = LeaguePlayer.first(:league_id => league.id, :player_id => player.id)
       if invite
         player_info[:invited] = true
@@ -83,25 +67,45 @@ class League
         player_info[:invited] = false
         player_info[:accepted_invite] = false
       end
-      invitable_players << player_info
+      player_info
     end
-
-    invitable_players
   end
 
-  # lump league & commissioner data into one hash
+  def self.update(info)
+    league_info = info[:league]
+    requester = Player.first(:api_key => info[:requester_api_key])
+    league = League.first(:id => info[:league_id].to_i)
+    return false if league.nil?
+    return false if requester.id != league.commissioner_id
+    updated = true
+    updated = updated && league.update(:current_season_id => league_info[:current_season_id].to_i) if league_info.has_key?('current_season_id')
+    # updated = updated && new_update_here
+    updated
+  end
+
+  def self.players(info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    league = League.first(:id => info[:league_id].to_i)
+    return false if requester.nil? || league.nil?
+    return false if !requester.leagues.map{|l| l.id}.include?(league.id)
+    enrolled_players = league.players.select do |p|
+      LeaguePlayer.first(:player_id => p.id, :league_id => league.id).accepted_invite
+    end
+    enrolled_players.map { |p| Player.sanitize(p) }
+  end
+
   def self.with_commissioner(l)
-    league = {:id => l.id,
-              :created_at => l.created_at,
-              :name => l.name,
-              :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
-              :current_season_id => l.current_season_id,
-              :players_per_team => l.players_per_team,
-              :plays_balls_back => l.plays_balls_back,
-              :extra_point_cups => l.extra_point_cups,
-              :rerack_cups => l.rerack_cups
+    {
+      :id => l.id,
+      :created_at => l.created_at,
+      :name => l.name,
+      :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
+      :current_season_id => l.current_season_id,
+      :players_per_team => l.players_per_team,
+      :plays_balls_back => l.plays_balls_back,
+      :extra_point_cups => l.extra_point_cups,
+      :rerack_cups => l.rerack_cups
     }
-    league
   end
 
   def self.with_commissioner_and_season(l)
@@ -116,36 +120,5 @@ class League
       :extra_point_cups => l.extra_point_cups,
       :rerack_cups => l.rerack_cups
     }
-  end
-
-  # update league
-  def self.update(info)
-    league_info = info[:league]
-    requester = Player.first(:api_key => info[:requester_api_key])
-    league = League.first(:id => info[:league_id].to_i)
-    return false if league.nil?
-    return false if requester.id != league.commissioner_id
-
-    updated = true
-    if league_info.has_key?('current_season_id')
-      updated = updated & league.update(:current_season_id => league_info[:current_season_id].to_i)
-    end
-    updated
-  end
-
-  # get all the players in the league
-  def self.players(info)
-    requester = Player.first(:api_key => info[:requester_api_key])
-    league = League.first(:id => info[:league_id].to_i)
-    return false if requester.nil? || league.nil?
-
-    enrolled_players = league.players.select do |p|
-      LeaguePlayer.first(:player_id => p.id, :league_id => league.id).accepted_invite
-    end
-
-    enrolled_player_ids = enrolled_players.map { |p| p.id }
-    return false if !enrolled_player_ids.include?(requester.id)
-
-    enrolled_players.map { |p| Player.sanitize(p) }
   end
 end
