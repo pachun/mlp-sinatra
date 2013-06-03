@@ -28,7 +28,7 @@ class MLPSinatra < Sinatra::Application
   end
 
   # get a player's league invites
-  get '/player/:player_id/league_invites/:requester_api_key' do
+  get '/player/:player_id/invited_leagues/:requester_api_key' do
     league_invites = Player.league_invites(params)
     if league_invites
       status 200
