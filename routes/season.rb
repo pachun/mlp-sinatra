@@ -18,4 +18,14 @@ class MLPSinatra < Sinatra::Application
       status 400
     end
   end
+
+  get '/season/:season_id/games/:requester_api_key' do
+    games = Season.games(params)
+    if games
+      status 200
+      games.to_json
+    else
+      status 400
+    end
+  end
 end

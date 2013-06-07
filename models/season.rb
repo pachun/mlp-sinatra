@@ -35,4 +35,12 @@ class Season
       Team.all(:season_id => season.id, :p1_accepted => true, :p2_accepted => true, :order => [:wins.desc])
     end
   end
+
+  def self.games(info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    season = Season.first(:id => info[:season_id].to_i)
+    return false if requester.nil? || season.nil?
+    return false if !season.league.includes?(requester)
+    Game.all(:season_id => season.id)
+  end
 end
