@@ -51,7 +51,7 @@ class Player
     league_ids.map { |id| League.with_commissioner_and_season( League.first(:id => id) ) }
   end
 
-  def self.league_invites(info)
+  def self.invited_leagues(info)
     player = Player.first(:id => info[:player_id].to_i)
     return false if player.api_key != info[:requester_api_key]
     league_ids = []
@@ -74,5 +74,37 @@ class Player
     else
       league_player.destroy
     end
+  end
+
+  def self.invited_teams(info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    player = Player.first(:id => info[:player_id].to_i)
+    season = Season.first(:id => info[:season_id].to_i)
+    return false if requester.nil? || player.nil? || season.nil?
+    return false if requester.id != player.id
+    return false if !season.league.includes?(player)
+
+    Team.all(:season_id => season.id, :p1_id => player.id, :order => [:proposed_at.desc]) +
+    Team.all(:season_id => season.id, :p2_id => player.id, :order => [:proposed_at.desc]) +
+    Team.all(:season_id => season.id, :p3_id => player.id, :order => [:proposed_at.desc])
+  end
+
+  def self.team_invite(response, info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    player = Player.first(:id => info[:player_id].to_i)
+    team = Team.first(:id => info[:team_id].to_i)
+    return false if requester.nil? || player.nil? || team.nil?
+    return false if requester.id != player.id
+    return false if !team.includes?(player)
+
+    if player.id == team.p1_id
+      team.update(:p1_responded => true, :p1_accepted => (response == :accept))
+    elsif player.id == team.p2_id
+      team.update(:p2_responded => true, :p2_accepted => (response == :accept))
+    elsif team.season.league.players_per_team == 3 && player.id == team.p3_id
+      team.update(:p3_responded => true, :p3_accepted => (response == :accept))
+    end
+    team.attempt_finalization
+    true
   end
 end

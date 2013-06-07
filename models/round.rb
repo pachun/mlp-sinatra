@@ -3,7 +3,7 @@ class Round
 
   # meta
   property :id, Serial
-  property :started_at, DateTime, :default => Time.now
+  property :started_at, DateTime
 
   # general
   property :number, Integer

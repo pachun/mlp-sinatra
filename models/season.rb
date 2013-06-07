@@ -28,7 +28,11 @@ class Season
     requester = Player.first(:api_key => info[:requester_api_key])
     season = Season.first(:id => info[:season_id].to_i)
     return false if requester.nil? || season.nil?
-    return false if !season.league.players.map{|p| p.id}.include?(requester.id)
-    season.teams
+    return false if !season.league.includes?(requester)
+    if season.league.players_per_team == 3
+      Team.all(:season_id => season.id, :p1_accepted => true, :p2_accepted => true, :p3_accepted => true, :order => [:wins.desc])
+    else
+      Team.all(:season_id => season.id, :p1_accepted => true, :p2_accepted => true, :order => [:wins.desc])
+    end
   end
 end

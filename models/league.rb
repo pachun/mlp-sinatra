@@ -23,6 +23,13 @@ class League
   has n, :league_players
   has n, :players, :through => :league_players
 
+  def includes?(player)
+    league_players.each do |league_player|
+      return true if league_player.accepted_invite && league_player.player_id == player.id
+    end
+    false
+  end
+
   def self.new_with(info)
     league = info[:league]
     league[:commissioner_id] = league[:commissioner_id].to_i
