@@ -98,7 +98,7 @@ class League
     enrolled_players = league.players.select do |p|
       LeaguePlayer.first(:player_id => p.id, :league_id => league.id).accepted_invite
     end
-    enrolled_players.map { |p| Player.sanitize(p) }
+    enrolled_players.map{ |p| Player.sanitize(p, for_league:league) }
   end
 
   def self.with_commissioner(l)
@@ -120,7 +120,7 @@ class League
       :id => l.id,
       :created_at => l.created_at,
       :name => l.name,
-      :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id)),
+      :commissioner => Player.sanitize(Player.first(:id => l.commissioner_id), for_league:l),
       :current_season => Season.first(:id => l.current_season_id),
       :players_per_team => l.players_per_team,
       :plays_balls_back => l.plays_balls_back,

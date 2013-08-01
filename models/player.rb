@@ -37,8 +37,22 @@ class Player
     players
   end
 
-  def self.sanitize(player)
-    {:id => player.id, :name => player.name, :email => player.email, :registered_at => player.registered_at}
+  def self.sanitize(player, for_league:league)
+    {
+      :id => player.id,
+      :name => player.name,
+      :email => player.email,
+      :registered_at => player.registered_at,
+      :opp => player.opp,
+      :ohp => player.ohp,
+      :lpp => player.lpp(0),
+      :lhp => player.lhp(0),
+      :spp => player.spp(0),
+      :shp => player.shp(0),
+      :olc => player.olc,
+      :llc => player.llc,
+      :slc => player.slc,
+    }
   end
 
   def self.leagues(info)
@@ -48,6 +62,7 @@ class Player
     player.league_players.each do |invite|
       league_ids << invite.league_id if invite.accepted_invite
     end
+    ['hello', 'world']
     league_ids.map { |id| League.with_commissioner_and_season( League.first(:id => id) ) }
   end
 
@@ -107,4 +122,60 @@ class Player
     team.attempt_finalization
     true
   end
+
+  def opp
+    shots = Shot.all(:player_id => self.id)
+    shots.each do |shot|
+    end
+    0
+  end
+
+  def ohp
+    0
+  end
+
+  def lpp(league)
+    0
+  end
+
+  def lhp(league)
+    0
+  end
+
+  def spp(season)
+    3
+  end
+
+  def shp(season)
+    2
+  end
+
+  def olc
+    0
+  end
+
+  def llc
+    0
+  end
+
+  def slc
+    0
+  end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
