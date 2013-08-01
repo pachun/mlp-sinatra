@@ -43,4 +43,12 @@ class Season
     return false if !season.league.includes?(requester)
     Game.all(:season_id => season.id)
   end
+
+  def self.lock_teams(info)
+    requester = Player.first(:api_key => info[:requester_api_key])
+    season = Season.first(:id => info[:season_id].to_i)
+    return false if requester.nil? || season.nil?
+    return false if season.league.commissioner_id != requester.id
+    season.update(:teams_locked => true)
+  end
 end

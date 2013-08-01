@@ -28,4 +28,12 @@ class MLPSinatra < Sinatra::Application
       status 400
     end
   end
+
+  put '/season/:season_id/lock_teams/:requester_api_key' do
+    if Season.lock_teams(params)
+      status 200
+    else
+      status 400
+    end
+  end
 end

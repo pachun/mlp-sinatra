@@ -11,6 +11,7 @@ class Game
   property :was_played, Boolean, :default => false
 
   # team info
+  property :ref_id, Integer
   property :home_team_id, Integer
   property :away_team_id, Integer
 
@@ -49,5 +50,32 @@ class Game
                 :season_id => game_info[:season_id].to_i
                )
     new_game.save
+  end
+
+  def bundle_details
+    rounds.map do |round|
+      round.bundle
+    end.to_json
+  end
+
+  def score(info)
+    self.winning_team_id = info[:winning_team_id].to_i
+    self.was_played = true
+    self.ref_id = info['ref_id'].to_i
+    self.home_team_id = info['home_team_id'].to_i
+    self.away_team_id = info['away_team_id'].to_i
+    self.htp1_id = info['htp1_id'].to_i
+    self.htp2_id = info['htp2_id'].to_i
+    self.atp1_id = info['atp1_id'].to_i
+    self.atp2_id = info['atp2_id'].to_i
+    if self.season.league.players_per_team == 3
+      self.htp3_id = info['htp3_id'].to_i
+      self.atp3_id = info['atp3_id'].to_i
+    end
+    info['rounds'].each do |round_json|
+      round_json['game_id'] = self.id
+      Round.new_with(round_json)
+    end
+    save
   end
 end
