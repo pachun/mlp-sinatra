@@ -24,6 +24,14 @@ class Round
     bundled
   end
 
+  def turns
+    unless season_turn.nil?
+      [first_turn, second_turn]
+    else
+      [first_turn]
+    end
+  end
+
   def self.new_with(info)
     round = Round.new
     round.game_id = info['game_id'].to_i

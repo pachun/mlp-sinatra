@@ -37,7 +37,8 @@ class Player
     players
   end
 
-  def self.sanitize(player, for_league:league)
+  def self.sanitize(player, league)
+    current_season = league.seasons.first(:id => league.current_season_id)
     {
       :id => player.id,
       :name => player.name,
@@ -45,10 +46,10 @@ class Player
       :registered_at => player.registered_at,
       :opp => player.opp,
       :ohp => player.ohp,
-      :lpp => player.lpp(0),
-      :lhp => player.lhp(0),
-      :spp => player.spp(0),
-      :shp => player.shp(0),
+      :lpp => player.lpp(league),
+      :lhp => player.lhp(league),
+      :spp => player.spp(current_season),
+      :shp => player.shp(current_season),
       :olc => player.olc,
       :llc => player.llc,
       :slc => player.slc,
@@ -62,7 +63,6 @@ class Player
     player.league_players.each do |invite|
       league_ids << invite.league_id if invite.accepted_invite
     end
-    ['hello', 'world']
     league_ids.map { |id| League.with_commissioner_and_season( League.first(:id => id) ) }
   end
 
@@ -143,7 +143,39 @@ class Player
   end
 
   def spp(season)
-    3
+    shots = shots_in_season(season)
+    points = league_point_percentage(season, shots)
+    points
+    # (points / shots.count)
+  end
+
+  def league_point_percentage(season, shots)
+    specials = season.league.extra_point_cups.split(',').map{ |s| s.to_i }
+    points = 0.0
+    shots.each do |shot|
+      if specials.include?(shot.cup_number) && shot.cup_number == 10
+        points += 3
+      elsif specials.include?(shot.cup_number)
+        points += 6
+      elsif shot.status == 'shot' && shot.cup_number > 0
+        points += 2
+      end
+    end
+    points
+  end
+
+  def shots_in_season(season)
+    rounds = season.games.all(:winning_team_id.not => nil).rounds#.turns.shots.all(:player_id => self.id)
+    shots = []
+    rounds.each do |round|
+      shot = round.first_turn.shots.first(:player_id => self.id)
+      shots << shot unless shot.nil?
+      unless round.second_turn.nil?
+        shot = round.second_turn.shots.first(:player_id => self.id)
+        shots << shot unless shot.nil?
+      end
+    end
+    shots
   end
 
   def shp(season)
