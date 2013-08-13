@@ -44,15 +44,12 @@ class Player
       :name => player.name,
       :email => player.email,
       :registered_at => player.registered_at,
-      :opp => player.opp,
-      :ohp => player.ohp,
       :lpp => player.lpp(league),
       :lhp => player.lhp(league),
       :spp => player.spp(current_season),
       :shp => player.shp(current_season),
-      :olc => player.olc,
-      :llc => player.llc,
-      :slc => player.slc,
+      :llc => player.llc(league),
+      :slc => player.slc(current_season),
     }
   end
 
@@ -123,91 +120,82 @@ class Player
     true
   end
 
-  def opp
-    shots = Shot.all(:player_id => self.id)
-    shots.each do |shot|
-    end
-    0
-  end
-
-  def ohp
-    0
-  end
-
   def lpp(league)
-    0
+    shots = shots_in_league(league)
+    return 0 if shots.count == 0
+    points = point_percentage(league, shots)
+    (points / shots.count).to_s.to_f.round(2)
   end
 
   def lhp(league)
-    0
+    shots = shots_in_league(league)
+    return 0 if shots.count == 0
+    hits = shots.select{ |shot| shot.cup_number > 0 && shot.status != 'no_shot' }
+    (hits.count.to_f / shots.count).round(2)
   end
 
   def spp(season)
     shots = shots_in_season(season)
-    points = league_point_percentage(season, shots)
-    points
-    # (points / shots.count)
+    return 0 if shots.count == 0
+    points = point_percentage(season.league, shots)
+    (points / shots.count).to_s.to_f.round(2)
   end
 
-  def league_point_percentage(season, shots)
-    specials = season.league.extra_point_cups.split(',').map{ |s| s.to_i }
+  def shp(season)
+    shots = shots_in_season(season)
+    return 0 if shots.count == 0
+    hits = shots.select{ |shot| shot.cup_number > 0 && shot.status != 'no_shot' }
+    (hits.count.to_f / shots.count).round(2)
+  end
+
+  def llc(league)
+    shots = shots_in_league(league)
+    shots.select{ |shot| shot.cup_number == 10 }.count
+  end
+
+  def slc(season)
+    shots = shots_in_season(season)
+    shots.select{ |shot| shot.cup_number == 10 }.count
+  end
+
+  def point_percentage(league, shots)
+    specials = league.extra_point_cups.split(',').map{ |s| s.to_i }
     points = 0.0
     shots.each do |shot|
       if specials.include?(shot.cup_number) && shot.cup_number == 10
         points += 3
       elsif specials.include?(shot.cup_number)
-        points += 6
-      elsif shot.status == 'shot' && shot.cup_number > 0
         points += 2
+      elsif shot.status == 'shot' && shot.cup_number > 0
+        points += 1
       end
     end
     points
   end
 
+  def shots_in_league(league)
+    rounds = []
+    league.seasons.each do |season|
+      rounds += season.games.all(:winning_team_id.not => nil).rounds
+    end
+    shots_in_rounds(rounds)
+  end
+
   def shots_in_season(season)
-    rounds = season.games.all(:winning_team_id.not => nil).rounds#.turns.shots.all(:player_id => self.id)
+    rounds = season.games.all(:winning_team_id.not => nil).rounds
+    shots_in_rounds(rounds)
+  end
+
+  def shots_in_rounds(rounds)
     shots = []
     rounds.each do |round|
       shot = round.first_turn.shots.first(:player_id => self.id)
-      shots << shot unless shot.nil?
+      shots << shot unless shot.nil? || shot.status == 'no_shot'
       unless round.second_turn.nil?
         shot = round.second_turn.shots.first(:player_id => self.id)
-        shots << shot unless shot.nil?
+        shots << shot unless shot.nil? || shot.status == 'no_shot'
       end
     end
     shots
   end
-
-  def shp(season)
-    2
-  end
-
-  def olc
-    0
-  end
-
-  def llc
-    0
-  end
-
-  def slc
-    0
-  end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -80,4 +80,16 @@ class Team
       update(:finalized_at => Time.now) if p1_responded && p2_responded
     end
   end
+
+  def wins
+    season = Season.first(:id => self.season_id)
+    season.games.all(:winning_team_id => self.id).count
+  end
+
+  def losses
+    season = Season.first(:id => self.season_id)
+    games = season.games.all(:home_team_id => self.id)
+    games += season.games.all(:away_team_id => self.id)
+    games.count - wins
+  end
 end
