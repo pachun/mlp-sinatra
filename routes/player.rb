@@ -22,7 +22,7 @@ class MLPSinatra < Sinatra::Application
     if player
       base = "http://mlp-sinatra.herokuapp.com"
       body = "Reset your Major League Pong account password\n===\n#{base}/player/#{player.id}/reset_password/#{player.api_key}"
-      Pony.mail(:to => player.email, :from => 'hello@mlp.com', :subject => 'MLP Password Reset', :body => body)
+      Pony.mail(:to => player.email, :from => 'hello@mlp.com', :subject => 'MLP Password Reset', :body => body, :via_options => PonyMailOptions)
       status 200
     else
       status 400
@@ -128,14 +128,12 @@ class MLPSinatra < Sinatra::Application
 end
 
 def reset_password_content
-"
-<html>
+"<html>
 <head>
 <script>
 function check_passwords() {
   p1 = document.getElementsByName('new_password')[0].value;
   p2 = document.getElementsByName('new_password_confirmed')[0].value;
-  alert('first is ' + p1 + 'second is ' + p2)
   if(p1.length < 4) alert('Valid passwords are at least 4 characters long.');
   else if(p1 != p2) alert('Passwords must match.');
   else alert('Password Reset!');
@@ -149,8 +147,7 @@ New Password (Confirm) <input type='text' name='new_password_confirmed'></br>
 <input type='submit' value='Reset' onclick='check_passwords()'>
 </form>
 </body>
-</html>
-"
+</html>"
 end
 
 
