@@ -5,6 +5,9 @@ class MLPSinatra < Sinatra::Application
     player = params[:player]
     if Player.signup(player[:name], player[:email], player[:password])
       status 200
+      email(address:player[:email],
+              title:"Hello #{player[:name]}!",
+               body:welcome_message)
     else
       status 400
     end
@@ -152,10 +155,14 @@ end
 
 def email(options)
   body = "<img src='http://i.imgur.com/g0jEw2M.png' style='border-radius:10px;width:150px;height:150px;'><h1>#{options[:title]}</h1><br>#{options[:body]}"
-  Pony.mail(:to => options[:address], :from => 'hello@mlp.com', :subject => 'MLP Password Reset', :headers => {'Content-Type'=>'text/html'}, :body => body, :via_options => PonyMailOptions)
+  Pony.mail(:to => options[:address], :from => 'hello@mlp.com', :subject => options[:title], :headers => {'Content-Type'=>'text/html'}, :body => body, :via_options => PonyMailOptions)
 end
 
 def lost_password_email_for(player)
   base = 'http://mlp-sinatra.herokuapp.com'
-  "<a style='font-size:16pt;' href='#{base}/player/#{player.id}/reset_password/#{player.api_key}'>Here's a link to reset it.</a><a style='font-size:16pt;' href='#{base}/player/#{player.id}/reset_password/#{player.api_key}'>Here's a link to reset it.</a>"
+  "<a style='font-size:16pt;' href='#{base}/player/#{player.id}/reset_password/#{player.api_key}'>Here's a link to reset it.</a>"
+end
+
+def welcome_message
+  "<span style='font-size:14pt;'>Welcome to Major League Pong!</span>"
 end
