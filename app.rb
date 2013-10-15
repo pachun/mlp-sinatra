@@ -9,8 +9,8 @@ require 'pony'
 PonyMailOptions = {
     :address        => 'smtp.mandrillapp.com',
     :port           => '587',
-    :user_name      => ENV['MANDRILL_USERNAME'],
-    :password       => ENV['MANDRILL_PASSWORD'],
+    :user_name      => 'hello@nickpachulski.com',#ENV['MANDRILL_USERNAME'],
+    :password       => '6FfLfd4BBObJbuEXqIGxpQ',#ENV['MANDRILL_PASSWORD'],
     :authentication => :plain, # :plain, :login, :cram_md5, no auth by default
     :domain         => "localhost.localdomain", # the HELO domain provided by the client to the server
     :enable_starttls_auto => false,
