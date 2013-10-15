@@ -20,7 +20,7 @@ class MLPSinatra < Sinatra::Application
   get '/player/:email/email_password_reset_link' do
     player = Player.first(:email => params[:email])
     if player
-      base = "http://localhost" #"http://mlp-sinatra.herokuapp.com"
+      base = "http://mlp-sinatra.herokuapp.com"
       body = "Reset your Major League Pong account password\n===\n#{base}/player/#{player.id}/reset_password/#{player.api_key}"
       Pony.mail(:to => player.email, :from => 'hello@mlp.com', :subject => 'MLP Password Reset', :body => body)
       status 200
