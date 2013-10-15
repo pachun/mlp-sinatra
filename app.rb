@@ -12,7 +12,8 @@ PonyMailOptions = {
     :user_name      => ENV['MANDRILL_USERNAME'],
     :password       => ENV['MANDRILL_PASSWORD'],
     :authentication => :plain, # :plain, :login, :cram_md5, no auth by default
-    :domain         => "localhost.localdomain" # the HELO domain provided by the client to the server
+    :domain         => "localhost.localdomain", # the HELO domain provided by the client to the server
+    :enable_starttls_auto => false,
   }
 
 class MLPSinatra < Sinatra::Application
