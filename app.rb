@@ -4,6 +4,7 @@ require 'dm-core'
 require 'bcrypt'
 require 'dm-serializer'
 require 'dm-constraints'
+require 'pony'
 
 class MLPSinatra < Sinatra::Application
   :enable_sessions

@@ -4,6 +4,9 @@ source 'https://rubygems.org'
 gem 'sinatra'
 gem 'thin'
 
+# automated emails
+gem 'pony'
+
 # data transfer
 gem 'json'
 gem 'dm-serializer'
@@ -12,16 +15,13 @@ gem 'dm-serializer'
 gem 'bcrypt-ruby'
 
 # database / ORM
-
 gem 'data_mapper'
 gem 'dm-core'
 gem 'dm-constraints'
-
 group :production do
   gem 'pg'
   gem 'dm-postgres-adapter'
 end
-
 group :development do
   gem 'sqlite3'
   gem 'dm-sqlite-adapter'
