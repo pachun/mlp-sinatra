@@ -164,5 +164,5 @@ def lost_password_email_for(player)
 end
 
 def welcome_message
-  "<span style='font-size:14pt;'>Welcome to Major League Pong!</span>"
+  "<span style='font-size:14pt;'>Welcome to Major League Pong.</span>"
 end
