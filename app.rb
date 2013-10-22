@@ -21,7 +21,7 @@ class MLPSinatra < Sinatra::Application
   set(:session_secret, "mlp-sinatra")
 
   get "/" do
-    Game.destroy
+    Game.destroy!
     "hello world"
   end
 end

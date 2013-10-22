@@ -14,6 +14,8 @@ class Game
   property :ref_id, Integer
   property :home_team_id, Integer
   property :away_team_id, Integer
+  def home_team; Team.first(:id => home_team_id); end
+  def away_team; Team.first(:id => away_team_id); end
 
   # player info
   property :htp1_id, Integer
@@ -71,6 +73,13 @@ class Game
     if self.season.league.players_per_team == 3
       self.htp3_id = info['htp3_id'].to_i
       self.atp3_id = info['atp3_id'].to_i
+    end
+    if winning_team_id == away_team_id
+      away_team.update(:wins => away_team.wins + 1)
+      home_team.update(:losses => home_team.losses + 1)
+    else
+      home_team.update(:wins => home_team.wins + 1)
+      away_team.update(:losses => away_team.losses + 1)
     end
     info['rounds'].each do |round_json|
       round_json['game_id'] = self.id

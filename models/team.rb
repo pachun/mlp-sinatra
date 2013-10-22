@@ -81,15 +81,15 @@ class Team
     end
   end
 
-  def wins
-    season = Season.first(:id => self.season_id)
-    season.games.all(:winning_team_id => self.id).count
-  end
+  # def wins
+  #   season = Season.first(:id => self.season_id)
+  #   season.games.all(:winning_team_id => self.id).count
+  # end
 
-  def losses
-    season = Season.first(:id => self.season_id)
-    games = season.games.all(:home_team_id => self.id)
-    games += season.games.all(:away_team_id => self.id)
-    games.count - wins
-  end
+  # def losses
+  #   season = Season.first(:id => self.season_id)
+  #   games = season.games.all(:home_team_id => self.id)
+  #   games += season.games.all(:away_team_id => self.id)
+  #   games.count - wins
+  # end
 end
